@@ -20,7 +20,7 @@ import utils
 from numpy import linalg as LA
 from cPickle import load
 
-data_x,data_adj,data_label = utils.load_data()
+data_adj,data_x,data_label = utils.load_data()
 
 
 
@@ -43,32 +43,32 @@ np.random.seed(random_seed)
 
 
 # tf Graph input
-x  = tf.placeholder(name='x',  dtype=tf.float32, shape=[None,5000*3])
-adj  = tf.placeholder(name='adj', dtype=tf.float32, shape=[None,5000*5000])
+x  = tf.placeholder(name='x',  dtype=tf.float32, shape=[None,5000,3])
+adj  = tf.placeholder(name='adj', dtype=tf.float32, shape=[None,5000,5000])
 gt = tf.placeholder(name='gt', dtype=tf.float32, shape=[None,2]) 
 
 
 # Store layers weight & bias
 weights = {
-    'h1':  tf.Variable(tf.truncated_normal([3,   16 ],stddev=0.1, seed=random_seed)),
-    'h2':  tf.Variable(tf.truncated_normal([16,  32 ],stddev=0.1, seed=random_seed)),
-    'h3':  tf.Variable(tf.truncated_normal([32,  64],stddev=0.1, seed=random_seed)),
-    'out': tf.Variable(tf.truncated_normal([64*5000,  2  ],stddev=0.1, seed=random_seed))
+    'h1':  tf.Variable(tf.truncated_normal([3,  5000*4 ],stddev=0.1, seed=random_seed)),
+    'h2':  tf.Variable(tf.truncated_normal([5000*4,  5000*8 ],stddev=0.1, seed=random_seed)),
+    'h3':  tf.Variable(tf.truncated_normal([5000*8,  5000*8],stddev=0.1, seed=random_seed)),
+    'out': tf.Variable(tf.truncated_normal([8*5000,  2  ],stddev=0.1, seed=random_seed))
 }
 biases = {
-    'b1':  tf.Variable(tf.truncated_normal([ 16 ],stddev=0.1, seed=random_seed)),
-    'b2':  tf.Variable(tf.truncated_normal([ 32 ],stddev=0.1, seed=random_seed)),
-    'b3':  tf.Variable(tf.truncated_normal([ 64],stddev=0.1, seed=random_seed)),
+    'b1':  tf.Variable(tf.truncated_normal([ 5000*4 ],stddev=0.1, seed=random_seed)),
+    'b2':  tf.Variable(tf.truncated_normal([ 5000*8 ],stddev=0.1, seed=random_seed)),
+    'b3':  tf.Variable(tf.truncated_normal([ 5000*8],stddev=0.1, seed=random_seed)),
     'out': tf.Variable(tf.truncated_normal([ 2  ],stddev=0.1, seed=random_seed))
 }
 
 
 # Create model
 def multilayer_perceptron(x):
-    layer_1 = tf.nn.relu(tf.add(tf.matmul(tf.matmul(adj,x),weights['h1'])), biases['b1'])))
-    layer_2 = tf.nn.relu(tf.add(tf.matmul(tf.matmul(adj,layer_1),weights['h2'])), biases['b2'])))
-    layer_3 = tf.nn.relu(tf.add(tf.matmul(tf.matmul(adj,layer_2),weights['h3'])), biases['b3'])))
-    layer_3 = tf.reshape(layer_3,[-1,64*5000])
+    layer_1 = tf.nn.relu(tf.add(tf.matmul(tf.matmul(adj, x),weights['h1']), biases['b1']))
+    layer_2 = tf.nn.relu(tf.add(tf.matmul(tf.matmul(layer_1, adj),weights['h2']), biases['b2']))
+    layer_3 = tf.nn.relu(tf.add(tf.matmul(tf.matmul(layer_2, adj),weights['h3']), biases['b3']))
+    layer_3 = tf.reshape(layer_3,[-1,8*5000])
     x_hat = tf.add(tf.matmul(layer_3,weights['out']), biases['out'])
     return x_hat
 
@@ -107,20 +107,14 @@ with tf.Session() as sess:
                 gt_arr.append([0, 1])
             
         
-        x_arr =   np.reshape(x_arr, (-1, 5000*3))
-        adj_arr = np.reshape(adj_arr, (-1, 5000*5000))
+        x_arr =   np.reshape(x_arr, (-1, 5000,  3))
+        adj_arr = np.reshape(adj_arr, (-1, 5000,5000))
         gt_arr =  np.reshape(gt_arr, (-1 , 2))
         _, c = sess.run([train_op, loss_op], feed_dict={x: x_arr, gt: gt_arr, adj: adj_arr})
         
         # Display logs per epoch step
         if iter % display_step == 0:
             print('[Iter {}] Recon: {}'.format(iter,c))
-            
-        if iter % 1000 == 0:
-            temp = sess.run(logits, feed_dict={x: x1})
-            temp = np.reshape(temp, (1, 5000, 3)) 
-            create_ply(iter, temp ,x1)
-            
         x_arr = []
         adj_arr = []
         gt_arr = []
