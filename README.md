@@ -26,11 +26,11 @@ for defining the weights, the softmax over a linear transformation is used:
 with ∑_(m=1)^M(q_m (x_i,x_j )=1)  and u_m,v_m and c_mare the parameters of the linear transformation. After training the dataset with encoder and decoder pair, the decoder part acts as a generator. At inference, the partial image is given to the network. For this purpose, random latent space with a normal distribution is created. Mean squared error is used for calculating the difference between given partial input and the output which is the result of decoder part. For updating the model Stochastic gradient descent is used.
 Denoising Autoencoder: is another method which is used for completion missing parts in 3D meshes. The idea behind denoising autoencoders is in order to force the hidden layer to discover more robust features and prevent it from simply learning the identity, we train the autoencoder to reconstruct the input from a corrupted version of it. We consider a multi-layer Graph Convolutional Network (GCNN) with the following layer-wise propagation rule:
 
-                                         H^((l+1))= σ (D ̃^(-1/2) A ̃D ̃^(-1/2) H^((l)) W^((l)))			    
+                                         H^((l+1))= σ (D^(-1/2) A D ^(-1/2) H^((l)) W^((l)))			    
                                                       
-Here, A ̃= A + I_N is the adjacency matrix of the undirected graph G with added self-connections. I_N is the identity matrix, 
+Here, A = A + I_N is the adjacency matrix of the undirected graph G with added self-connections. I_N is the identity matrix, 
 
-D ̃_ii= ∑_j(A ̃_ij) and W^((l)) is a layer-specific trainable weight matrix. σ (·) denotes an activation function, such as the ReLU (·) = max (0, ·). H^((l))∈ R^(N×D) is the matrix of activations in the l^thlayer; H^((0))= X. 
+D_ii= ∑_j(A_ij) and W^((l)) is a layer-specific trainable weight matrix. σ (·) denotes an activation function, such as the ReLU (·) = max (0, ·). H^((l))∈ R^(N×D) is the matrix of activations in the l^thlayer; H^((0))= X. 
 
 
 
