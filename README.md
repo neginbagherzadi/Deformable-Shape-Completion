@@ -45,6 +45,6 @@ D_ii= ∑_j(A_ij) and W^((l)) is a layer-specific trainable weight matrix. σ (�
 of the IEEE Conference on Computer Vision and Pattern Recognition 2014 (pp. 3794-3801).
 
 [2] Cignoni, Paolo, et al.” Meshlab: an open-source mesh processing tool.” Eurographics Italian Chapter Conference.
-Vol. 2008. 2008S.
+Vol. 2008. 2008S
   
 
